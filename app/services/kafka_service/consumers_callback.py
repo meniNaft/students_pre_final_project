@@ -8,8 +8,9 @@ import app.db.postgres.repositories.students_reviews_repository as students_revi
 import app.db.postgres.repositories.courses_repository as courses_repo
 import app.db.postgres.repositories.departments_repository as departments_repo
 import app.db.postgres.repositories.teachers_repository as teachers_repo
+import app.db.postgres.repositories.course_classes_repository as course_classes_repo
 from app.db.postgres.models import Student, StudentLifestyle, StudentCoursePerformance, StudentAppReview, Course, \
-    Teacher, Department
+    Teacher, Department, CourseClass, StudentTeacherClass
 
 students_topic = os.environ["STUDENTS_TOPIC"]
 
@@ -98,6 +99,41 @@ def new_teachers(messages: KafkaConsumer):
                     department_id=departments_repo.get_or_insert(Department(name=t['department'])).id
                 ) for t in message.value]
             teachers_repo.insert_range(teachers)
+        except Exception as e:
+            print(e)
+    print("complete insert students_course_performance")
+
+
+def new_course_classes(messages: KafkaConsumer):
+    for message in messages:
+        try:
+            course_classes = [
+                CourseClass(
+                    class_code=c['id'],
+                    section=c['section'],
+                    semester=c['semester'],
+                    room=c['room'],
+                    schedule=c['schedule'],
+                    course_id=courses_repo.get_or_insert(Course(name=c['course_name'])).id
+                ) for c in message.value]
+            course_classes_repo.insert_range(course_classes)
+        except Exception as e:
+            print(e)
+    print("complete insert students_course_performance")
+
+
+def new_relations(messages: KafkaConsumer):
+    for message in messages:
+        try:
+            student_teacher_class = [
+                StudentTeacherClass(
+                    enrollment_date=r['enrollment_date'],
+                    relationship_type=r['relationship_type'],
+                    student_id=students_repo.find_by_id(r['student_id']).id,
+                    course_class_id=course_classes_repo.find_by_code(r['class_id']).id,
+                    teacher_id=teachers_repo.find_by_code(r['teacher_id']).id
+                ) for r in message.value]
+            course_classes_repo.insert_range(student_teacher_class)
         except Exception as e:
             print(e)
     print("complete insert students_course_performance")

@@ -8,6 +8,7 @@ from app.db.postgres.models import Base
 class CourseClass(Base):
     __tablename__ = 'course_classes'
     id = Column(Integer, primary_key=True, autoincrement=True)
+    class_code = Column(String(100), nullable=False)
     section = Column(Integer, nullable=False)
     semester = Column(String(200), nullable=False)
     room = Column(String(200), nullable=False)

@@ -7,6 +7,8 @@ import app.services.kafka_service.consumers_callback as consumers_callback
 from app.services.handle_data_service import load_source_files
 
 teachers_topic = os.environ["TEACHERS_TOPIC"]
+course_classes_topic = os.environ["COURSE_CLASSES_TOPIC"]
+student_teacher_class_topic = os.environ["STUDENT_TEACHER_CLASS_TOPIC"]
 students_topic = os.environ["STUDENTS_TOPIC"]
 students_lifestyle_topic = os.environ["STUDENTS_LIFESTYLE_TOPIC"]
 students_course_performance_topic = os.environ["STUDENTS_COURSE_PERFORMANCE_TOPIC"]
@@ -19,6 +21,14 @@ if __name__ == '__main__':
     Thread(
         name="Consume_teachers",
         target=lambda: main_consumer(teachers_topic, consumers_callback.new_teachers)
+    ).start()
+    Thread(
+        name="Consume_course_classes",
+        target=lambda: main_consumer(course_classes_topic, consumers_callback.new_course_classes)
+    ).start()
+    Thread(
+        name="Consume_student_teacher_class",
+        target=lambda: main_consumer(student_teacher_class_topic, consumers_callback.new_relations)
     ).start()
     Thread(
         name="Consume_students",
